@@ -1,0 +1,17 @@
+{
+  "name": "TabsForge School OS",
+  "short_name": "TabsForge",
+  "description": "The complete AI-powered school operating system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#125A0F",
+  "icons": [
+    {
+      "src": "/logo-mark.png",
+      "sizes": "334x334",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

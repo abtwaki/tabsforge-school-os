@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TabsForge School OS — the complete AI-powered school operating system for Nigeria and beyond.">
+  <title>TabsForge — Educate. Manage. Grow.</title>
+  <style>
+    :root{
+      --green:#125A0F;--sage:#B8D276;--gold:#D6A20D;--navy:#0B367B;
+      --text:#1F2937;--muted:#6B7280;--bg:#FFFFFF;--soft:#F8FAFC;--border:#E5E7EB;
+      --radius:8px;--max:1100px;--font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.55}
+    a{color:var(--navy);text-decoration:none}
+    img{max-width:100%;display:block}
+    .container{width:min(92%,var(--max));margin:0 auto}
+    header{position:sticky;top:0;background:rgba(255,255,255,.96);backdrop-filter:blur(4px);border-bottom:1px solid var(--border);z-index:20}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 0}
+    .brand{display:flex;align-items:center;gap:.5rem;font-weight:800;color:var(--green);font-size:1.15rem}
+    .brand-mark{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,var(--green),var(--sage));display:grid;place-items:center;color:#fff;font-weight:900}
+    .nav-links{display:flex;gap:1.5rem;align-items:center}
+    .nav-links a{font-size:1rem;color:var(--text);font-weight:500}
+    .nav-links a:hover{color:var(--green)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:.6rem 1.1rem;border-radius:var(--radius);font-weight:600;font-size:1rem;transition:.15s}
+    .btn-primary{background:var(--green);color:#fff;border:0}
+    .btn-primary:hover{background:#0e480c}
+    .btn-outline{border:1px solid var(--navy);color:var(--navy);background:#fff}
+    .btn-outline:hover{background:#f1f5f9}
+    .hero{padding:4rem 0 3rem;background:var(--soft)}
+    .eyebrow{color:var(--gold);font-weight:700;text-transform:uppercase;font-size:.85rem;letter-spacing:.04em}
+    h1{font-size:2.6rem;line-height:1.15;color:var(--navy);margin:.6rem 0 1rem}
+    h2{font-size:1.7rem;color:var(--navy);margin-bottom:.8rem}
+    h3{font-size:1.1rem;margin-bottom:.4rem}
+    .lead{font-size:1.15rem;color:var(--muted);max-width:640px}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:2.5rem;align-items:center}
+    .hero-actions{display:flex;gap:1rem;margin-top:1.6rem;flex-wrap:wrap}
+    .hero-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem;box-shadow:0 8px 24px rgba(11,54,123,.06)}
+    .tag{display:inline-flex;align-items:center;gap:.35rem;background:#fff;border:1px solid var(--border);padding:.25rem .6rem;border-radius:99px;font-size:.85rem;color:var(--muted)}
+    .tag::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--sage)}
+    section{padding:3.5rem 0}
+    .section-head{text-align:center;max-width:680px;margin:0 auto 2.5rem}
+    .grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem}
+    .card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+    .card-icon{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;font-size:1.2rem;margin-bottom:.75rem;background:#f0fdf4;color:var(--green)}
+    .card:nth-child(2) .card-icon{background:#fffbeb;color:var(--gold)}
+    .card:nth-child(3) .card-icon{background:#eff6ff;color:var(--navy)}
+    .pricing-table{width:100%;border-collapse:collapse;margin-top:1rem}
+    .pricing-table th,.pricing-table td{text-align:left;padding:.75rem;border-bottom:1px solid var(--border)}
+    .pricing-table th{color:var(--muted);font-weight:600;font-size:.9rem;text-transform:uppercase}
+    .pricing-table td{font-size:1rem}
+    .form{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:520px;margin:0 auto}
+    .form-row{margin-bottom:1rem}
+    label{display:block;font-size:.92rem;font-weight:600;margin-bottom:.35rem;color:var(--text)}
+    input,select,textarea{width:100%;padding:.55rem .7rem;border:1px solid var(--border);border-radius:6px;font-family:inherit}
+    textarea{min-height:90px;resize:vertical}
+    .form-message{margin-top:.75rem;font-size:1rem;min-height:1.5em}
+    .success{color:var(--green)}
+    .error{color:#B91C1C}
+    footer{padding:2.5rem 0;background:var(--soft);border-top:1px solid var(--border)}
+    .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;font-size:1rem}
+    .footer-grid strong{color:var(--navy);display:block;margin-bottom:.5rem}
+    .footer-grid p,.footer-grid a{color:var(--muted);display:block;margin-bottom:.35rem}
+    .copy{text-align:center;color:var(--muted);font-size:.9rem;margin-top:2rem}
+    @media (max-width:760px){
+      .hero-grid{grid-template-columns:1fr}
+      h1{font-size:2rem}
+      .nav-links{display:none}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="/"><img class="brand-mark" src="/logo-mark.png" alt="TabsForge"> TabsForge</a>
+      <div class="nav-links">
+        <a href="#modules">Modules</a>
+        <a href="#ai">AI Suite</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#phases">Implementation</a>
+        <a href="/learn/">Learn About TabsForge</a>
+        <a class="btn btn-primary" href="#demo">Book a Free Demo</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="eyebrow">The Complete AI-Powered School Operating System</span>
+        <h1>Educate. Manage. Grow.</h1>
+        <p class="lead">TabsForge unifies admissions, academics, attendance, fees, results, staff, communication, and AI-assisted decision-making into one calm, powerful platform built for real schools.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#demo">Book a Free Demo</a>
+          <a class="btn btn-outline" href="/learn/">Learn About TabsForge</a>
+        </div>
+      </div>
+      <div class="hero-card">
+        <span class="tag">Built for Nigeria · Cloud-first · Mobile-friendly</span>
+        <h3 style="margin-top:1rem">Everything a school needs, connected.</h3>
+        <p style="color:var(--muted);margin-top:.5rem">From a parent's first enquiry to a student's final report sheet — every record, fee, grade, and conversation lives in one secure place.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="modules">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Core Modules</span>
+        <h2>One platform. Every department.</h2>
+        <p class="lead">TabsForge replaces fragmented spreadsheets and paperwork with a single, role-aware system.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-icon">🎓</div><h3>Admissions & Enrolment</h3><p>Online application, document upload, review queue, and automatic admission-number generation per your school's own format.</p></div>
+        <div class="card"><div class="card-icon">👨‍👩‍👧</div><h3>Students & Guardians</h3><p>Complete profiles, multi-guardian mapping, promotion/transfer/withdrawal, and secure document storage.</p></div>
+        <div class="card"><div class="card-icon">📚</div><h3>Academics</h3><p>Sessions, terms, classes, subjects, lesson plans, homework submission, and live virtual lessons.</p></div>
+        <div class="card"><div class="card-icon">📝</div><h3>Attendance & Discipline</h3><p>Daily class attendance with offline PWA support, automatic absentee alerts, and behaviour records.</p></div>
+        <div class="card"><div class="card-icon">📊</div><h3>Examinations & Results</h3><p>School-configurable grading schemes, score entry, result processing, report cards with positions, and broadsheets.</p></div>
+        <div class="card"><div class="card-icon">💳</div><h3>Fees & Finance</h3><p>Termly per-student billing, installment plans, Paystack/Flutterwave/USSD payments, automatic receipts, and PDF financial reports.</p></div>
+        <div class="card"><div class="card-icon">💬</div><h3>Communication</h3><p>Instant messages and group chats, announcements, SMS, email, and WhatsApp — each user chooses their preferred channel.</p></div>
+        <div class="card"><div class="card-icon">👩‍🏫</div><h3>Staff & HR</h3><p>Profiles, departments, roles, teacher allocation, attendance, leave, duty roster, and payroll.</p></div>
+        <div class="card"><div class="card-icon">📅</div><h3>Timetable & Scheduling</h3><p>Master, class, teacher, and room timetables with conflict detection and substitution.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ai" style="background:var(--soft)">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">AI Suite</span>
+        <h2>Intelligent assistance for every role</h2>
+        <p class="lead">AI supports your team without replacing human judgment — and never fabricates school records.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-icon">🧭</div><h3>Principal / Admin AI</h3><p>Daily briefing, fee-default prediction, and at-risk student early warnings with clear reasons.</p></div>
+        <div class="card"><div class="card-icon">✍️</div><h3>Teacher AI Assistant</h3><p>Lesson-plan drafts, report-card comments, and learning-gap analysis based on real class data.</p></div>
+        <div class="card"><div class="card-icon">🤖</div><h3>Student & Parent AI</h3><p>Personal tutor for students and plain-language insights for parents — scoped to their own data.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Why TabsForge</span>
+        <h2>Built for schools that take data seriously</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card"><h3>Secure & Private</h3><p>Row-level tenant isolation, role-based access, HTTPS, and audit trails keep every school's data separate and protected.</p></div>
+        <div class="card"><h3>Mobile & Offline Ready</h3><p>Teachers can mark attendance and submit homework scores even with weak or no connectivity; data syncs cleanly when back online.</p></div>
+        <div class="card"><h3>Zero IT Overhead</h3><p>Cloud-hosted, automatic updates, and a simple web interface — no servers to maintain at the school.</p></div>
+        <div class="card"><h3>Transparent Pricing</h3><p>Termly per-student billing with clear tiers and no hidden transaction percentages on school fees.</p></div>
+        <div class="card"><h3>Your Brand, Front and Centre</h3><p>Once your school goes live, your own logo becomes the primary brand mark; TabsForge becomes a discreet watermark.</p></div>
+        <div class="card"><h3>No Lock-in</h3><p>Export your complete school data — students, staff, grades, attendance, fees — to Excel/CSV anytime, no support ticket required.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Pricing</span>
+        <h2>Termly per-student subscription</h2>
+        <p class="lead">Pricing is based on enrolled student count. The first 50 students in Term 1 are free.</p>
+      </div>
+      <table class="pricing-table container" style="max-width:760px">
+        <thead><tr><th>Tier</th><th>Student range</th><th>Per student / term</th><th>Setup fee</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Tier 1</strong></td><td>50 – 499 students</td><td>₦2,700</td><td>₦50,000</td></tr>
+          <tr><td><strong>Tier 2</strong></td><td>500 – 999 students</td><td>₦2,250</td><td>₦100,000</td></tr>
+          <tr><td><strong>Tier 3</strong></td><td>1,000+ students</td><td>₦1,750</td><td>₦150,000</td></tr>
+        </tbody>
+      </table>
+      <p style="text-align:center;color:var(--muted);font-size:1rem;margin-top:1rem">Setup fee includes free Teacher Digital Academy training for your staff.</p>
+    </div>
+  </section>
+
+  <section id="phases" style="background:var(--soft)">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Implementation</span>
+        <h2>From sign-up to live school in four stages</h2>
+      </div>
+      <div class="grid-3">
+        <div class="card"><div class="card-icon">1</div><h3>Discover</h3><p>Book a free demo. We understand your school's structure, roles, and existing data.</p></div>
+        <div class="card"><div class="card-icon">2</div><h3>Configure</h3><p>Your unique school URL is provisioned, sessions/terms/classes are set up, and your branding is applied.</p></div>
+        <div class="card"><div class="card-icon">3</div><h3>Onboard</h3><p>Import or enter students, staff, and guardians. Train your team with the included academy.</p></div>
+        <div class="card"><div class="card-icon">4</div><h3>Go Live</h3><p>Admissions, attendance, fees, results, and communication start flowing in one place.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Book a Free Demo</span>
+        <h2>See TabsForge in action</h2>
+        <p class="lead">Tell us about your school and we will schedule a personalised walkthrough.</p>
+      </div>
+      <form class="form" id="demo-form">
+        <div class="form-row"><label for="name">School name</label><input id="name" name="name" required></div>
+        <div class="form-row"><label for="contact">Contact person</label><input id="contact" name="contact" required></div>
+        <div class="form-row"><label for="email">Email address</label><input id="email" name="email" type="email" required></div>
+        <div class="form-row"><label for="phone">Phone number</label><input id="phone" name="phone" required></div>
+        <div class="form-row"><label for="students">Approximate student count</label><select id="students" name="students"><option>Under 100</option><option>100 – 499</option><option>500 – 999</option><option>1,000+</option></select></div>
+        <div class="form-row"><label for="message">What would you like to focus on?</label><textarea id="message" name="message"></textarea></div>
+        <button class="btn btn-primary" type="submit" style="width:100%">Book my free demo</button>
+        <p class="form-message" id="form-message"></p>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="/"><img class="brand-mark" src="/logo-mark.png" alt="TabsForge"> TabsForge</a>
+        <p style="color:var(--muted);margin-top:.5rem">Educate. Manage. Grow.</p>
+      </div>
+      <div>
+        <strong>Product</strong>
+        <a href="/login">School Login</a>
+        <a href="/learn/">Learn About TabsForge</a>
+        <a href="#demo">Book a Free Demo</a>
+      </div>
+      <div>
+        <strong>Contact</strong>
+        <p>Abraham Saidu Twaki</p>
+        <p>CEO & Principal Consultant</p>
+        <p>TabsSoft Global Technologies Limited</p>
+        <p>RC: 9350407</p>
+        <p>Minna, Niger State, Nigeria</p>
+        <p>+234 706 447 4671 · +234 807 636 4177</p>
+        <p>tabssoftglobaltechnology@gmail.com</p>
+        <p>www.tabssoftglobal.com</p>
+      </div>
+    </div>
+    <p class="copy">© 2026 TabsForge by TabsSoft Global Technologies Limited. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById('demo-form').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const msg = document.getElementById('form-message');
+      msg.textContent = 'Sending…'; msg.className = 'form-message';
+      const data = Object.fromEntries(new FormData(this));
+      try {
+        const res = await fetch('/api/marketing/demo-request/', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        const body = await res.json().catch(()=>({}));
+        if (res.ok) { msg.textContent = 'Thank you. We will contact you shortly to schedule your demo.'; msg.className = 'form-message success'; this.reset(); }
+        else { msg.textContent = body.detail || 'Could not submit. Please try again or contact us directly.'; msg.className = 'form-message error'; }
+      } catch (err) {
+        msg.textContent = 'Network error. Please try again.'; msg.className = 'form-message error';
+      }
+    });
+  </script>
+</body>
+</html>

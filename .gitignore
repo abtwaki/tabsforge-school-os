@@ -1,0 +1,33 @@
+# Secrets / local env
+.env
+.env.local
+.env.*.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Django local artifacts
+*.sqlite3
+db.sqlite3
+/staticfiles/
+/media/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+node_modules/
+dist/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
