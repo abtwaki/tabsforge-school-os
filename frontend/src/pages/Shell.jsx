@@ -24,6 +24,7 @@ import PlatformUsers from './PlatformUsers'
 import DemoLeads from './DemoLeads'
 import AiAssistant from './AiAssistant'
 import AtRisk from './AtRisk'
+import PaymentReturn from './PaymentReturn'
 
 const tierRank = { sprout: 1, roots: 2, bloom: 3, summit: 4 }
 
@@ -355,6 +356,7 @@ export default function Shell() {
             <Route path="messages" element={<Messages onRead={() => setUnread(0)} />} />
             <Route path="ai-assistant" element={<AiAssistant />} />
             <Route path="at-risk" element={<AtRisk />} />
+            <Route path="payment-return" element={<PaymentReturn />} />
             <Route path="*" element={<ModulePage />} />
           </Routes>
           </PageErrorBoundary>

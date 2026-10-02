@@ -9,6 +9,7 @@ from . import auth_views, csv_views, dashboard_views, marketing_views, onboardin
 from . import viewsets as views
 from . import admissions_views, homework_views, messaging_views, result_views, ai_views, reminder_views
 from . import channels_views, installment_views, group_views, risk_views, export_views, guest_views, rollover_views
+from . import payment_gateways
 
 router = DefaultRouter()
 
@@ -186,6 +187,10 @@ urlpatterns = [
 
     # Part 3: USSD payment
     path('payments/ussd/initiate/', installment_views.initiate_ussd_payment, name='ussd-initiate'),
+    path('payments/<str:provider>/initialize/', payment_gateways.initialize_payment, name='payment-initialize'),
+    path('payments/<str:provider>/verify/', payment_gateways.verify_payment, name='payment-verify'),
+    path('webhooks/paystack/', payment_gateways.paystack_webhook, name='paystack-webhook'),
+    path('webhooks/flutterwave/', payment_gateways.flutterwave_webhook, name='flutterwave-webhook'),
     path('receipts/<int:pk>/pdf/', installment_views.PaymentReceiptViewSet.as_view({'get': 'download_pdf'}), name='receipt-pdf'),
 
     # Part 6: Data export

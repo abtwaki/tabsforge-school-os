@@ -198,10 +198,22 @@ def compute_results_for_term(school, term):
         class_averages.setdefault(class_id, []).append((avg, student_id, sum(totals), len(totals)))
 
     with transaction.atomic():
+        from attendance.models import Attendance
         for class_id, entries in class_averages.items():
             entries.sort(key=lambda x: x[0], reverse=True)
             class_size = len(entries)
             cls = Class.objects.get(pk=class_id)
+            class_avg = sum(e[0] for e in entries) / class_size if class_size else 0
+
+            # Days the register was marked for this class during the term —
+            # Nigerian report cards show "days present / days school opened".
+            days_open = (
+                Attendance.objects
+                .filter(school=school, school_class=cls,
+                        date__gte=term.start_date, date__lte=term.end_date)
+                .values('date').distinct().count()
+            )
+
             for rank, (avg, student_id, total, count) in enumerate(entries, start=1):
                 student = Student.objects.get(pk=student_id)
                 card, created = ReportCard.objects.get_or_create(
@@ -213,12 +225,20 @@ def compute_results_for_term(school, term):
                 card.school_class = cls
                 card.total_score = round(total, 2)
                 card.average_score = round(avg, 2)
+                card.class_average = round(class_avg, 2)
                 card.subjects_count = count
                 card.position = rank
                 card.class_size = class_size
+                card.days_open = days_open
+                card.days_present = Attendance.objects.filter(
+                    school=school, student=student, school_class=cls,
+                    date__gte=term.start_date, date__lte=term.end_date,
+                    status__in=[Attendance.Status.PRESENT, Attendance.Status.LATE],
+                ).count()
                 card.save(update_fields=[
-                    'school_class', 'total_score', 'average_score',
+                    'school_class', 'total_score', 'average_score', 'class_average',
                     'subjects_count', 'position', 'class_size',
+                    'days_open', 'days_present',
                 ])
 
     return len(result_rows)

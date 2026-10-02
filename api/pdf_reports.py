@@ -126,14 +126,20 @@ def generate_report_card_pdf(report_card):
          'Admission No:', student.admission_number],
         ['Class:', str(report_card.school_class or ''), 'Term:', str(term.name)],
         ['Session:', str(term.session.name), 'Position:', position_text],
-        ['Average:', f"{report_card.average_score or 0:.1f}%", 'Grade:', ''],
+        ['Average:', f"{report_card.average_score or 0:.1f}%",
+         'Class Avg:', f"{report_card.class_average:.1f}%" if report_card.class_average is not None else '—'],
     ]
     if show_attendance:
-        from attendance.models import Attendance
-        att = Attendance.objects.filter(school=school, student=student,
-                                        date__gte=term.start_date, date__lte=term.end_date)
-        total_days = att.count()
-        present = att.filter(status='present').count()
+        # Prefer the snapshot captured at compute time; fall back to a live
+        # count for cards generated before attendance tracking was added.
+        if report_card.days_open is not None:
+            present, total_days = report_card.days_present or 0, report_card.days_open
+        else:
+            from attendance.models import Attendance
+            att = Attendance.objects.filter(school=school, student=student,
+                                            date__gte=term.start_date, date__lte=term.end_date)
+            total_days = att.count()
+            present = att.filter(status__in=['present', 'late']).count()
         info.append(['Attendance:', f"{present}/{total_days} days", '', ''])
     t = Table(info, colWidths=[3 * cm, 6 * cm, 3 * cm, 5 * cm])
     t.setStyle(TableStyle([
@@ -194,6 +200,31 @@ def generate_report_card_pdf(report_card):
     ]))
     story.append(t2)
     story.append(Spacer(1, 0.4 * cm))
+
+    # Affective & psychomotor trait ratings (1–5) — the Nigerian report card
+    # behaviour/skills section.
+    traits = list(report_card.trait_ratings.all())
+    if traits:
+        story.append(Paragraph('BEHAVIOUR &amp; SKILLS (rated 1 – 5)', styles['h3']))
+        groups = [
+            ('AFFECTIVE TRAITS', [t for t in traits if t.category == 'affective']),
+            ('PSYCHOMOTOR SKILLS', [t for t in traits if t.category == 'psychomotor']),
+        ]
+        for heading, group in groups:
+            if not group:
+                continue
+            tdata = [[heading, 'Rating (1–5)']] + [[t.trait, str(t.rating)] for t in group]
+            tt = Table(tdata, colWidths=[11 * cm, 5 * cm])
+            tt.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), LIGHT_GRAY),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, LIGHT_GRAY]),
+                ('GRID', (0, 0), (-1, -1), 0.3, colors.grey),
+                ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+            ]))
+            story.append(tt)
+            story.append(Spacer(1, 0.25 * cm))
 
     # Comments
     if show_teacher_comment and report_card.teacher_comments:

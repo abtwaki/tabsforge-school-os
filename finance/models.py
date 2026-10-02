@@ -284,3 +284,40 @@ class Expense(TenantModel):
 
     def __str__(self):
         return f"{self.title} – {self.amount} ({self.expense_date})"
+
+
+class OnlinePaymentIntent(TenantModel):
+    """Tracks a parent-initiated online payment until the gateway confirms it.
+
+    An intent is created when a payer clicks "Pay online"; when Paystack or
+    Flutterwave confirms the charge (via /verify or webhook) a real Payment
+    row + receipt is created. This keeps the ledger honest — a Payment record
+    always means money actually received.
+    """
+
+    class Providers(models.TextChoices):
+        PAYSTACK = 'paystack', 'Paystack'
+        FLUTTERWAVE = 'flutterwave', 'Flutterwave'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        PAID = 'paid', 'Paid'
+        FAILED = 'failed', 'Failed'
+        ABANDONED = 'abandoned', 'Abandoned'
+
+    invoice = models.ForeignKey(
+        Invoice, on_delete=models.CASCADE, related_name='online_intents',
+    )
+    provider = models.CharField(max_length=20, choices=Providers.choices)
+    reference = models.CharField(max_length=80, db_index=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
+    payer_email = models.EmailField(blank=True)
+    gateway_payload = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = [['school', 'provider', 'reference']]
+
+    def __str__(self):
+        return f"{self.provider}:{self.reference} → {self.invoice.invoice_number} ({self.status})"

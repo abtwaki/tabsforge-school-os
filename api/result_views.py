@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from core.utils import audit, filter_by_school, get_current_school, int_param
-from gradebook.models import GradeBoundary, GradingScheme, ReportCard, ResultSummary
+from gradebook.models import GradeBoundary, GradingScheme, ReportCard, ResultSummary, TraitRating
 from accounts.models import User
 from schools.models import Term
 
@@ -61,26 +61,69 @@ class ResultSummarySerializer(drf_serializers.ModelSerializer):
         return f"{obj.student.first_name} {obj.student.last_name}"
 
 
+class TraitRatingSerializer(drf_serializers.ModelSerializer):
+    class Meta:
+        model = TraitRating
+        fields = ['id', 'trait', 'category', 'rating']
+
+
 class ReportCardSerializer(drf_serializers.ModelSerializer):
     student_name = drf_serializers.SerializerMethodField()
     term_name = drf_serializers.CharField(source='term.name', read_only=True)
     session_name = drf_serializers.CharField(source='term.session.name', read_only=True)
     class_name = drf_serializers.CharField(source='school_class.name', read_only=True, allow_null=True)
+    trait_ratings = TraitRatingSerializer(many=True, required=False)
 
     class Meta:
         model = ReportCard
         fields = [
             'id', 'school', 'student', 'student_name', 'term', 'term_name',
             'session_name', 'school_class', 'class_name',
-            'total_score', 'average_score', 'subjects_count',
+            'total_score', 'average_score', 'class_average', 'subjects_count',
             'position', 'class_size', 'status',
+            'days_open', 'days_present',
             'teacher_comments', 'principal_comments', 'next_term_begins',
-            'created_at', 'updated_at',
+            'trait_ratings', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'school', 'created_at', 'updated_at']
+        read_only_fields = [
+            'id', 'school', 'created_at', 'updated_at',
+            'days_open', 'days_present', 'class_average',
+        ]
 
     def get_student_name(self, obj):
         return f"{obj.student.first_name} {obj.student.last_name}"
+
+    def update(self, instance, validated_data):
+        traits = validated_data.pop('trait_ratings', None)
+        card = super().update(instance, validated_data)
+        if traits is not None:
+            self._sync_traits(card, traits)
+        return card
+
+    def _sync_traits(self, card, traits):
+        """Upsert affective/psychomotor ratings sent as [{trait, category, rating}]."""
+        seen = set()
+        for item in traits:
+            trait = (item.get('trait') or '').strip()
+            if not trait:
+                continue
+            category = item.get('category')
+            if category not in (TraitRating.Category.AFFECTIVE, TraitRating.Category.PSYCHOMOTOR):
+                raise drf_serializers.ValidationError({'trait_ratings': f'Invalid category for "{trait}".'})
+            rating = item.get('rating')
+            if rating is None or not 1 <= int(rating) <= 5:
+                raise drf_serializers.ValidationError({'trait_ratings': f'Rating for "{trait}" must be 1–5.'})
+            key = (category, trait)
+            seen.add(key)
+            TraitRating.objects.update_or_create(
+                school=card.school, report_card=card,
+                category=category, trait=trait,
+                defaults={'rating': int(rating)},
+            )
+        # Traits omitted from the payload are removed — the client sends the full set.
+        for rating_obj in card.trait_ratings.all():
+            if (rating_obj.category, rating_obj.trait) not in seen:
+                rating_obj.delete()
 
 
 class GradingSchemeViewSet(viewsets.ModelViewSet):
@@ -192,7 +235,9 @@ class EnhancedReportCardViewSet(viewsets.ModelViewSet):
         if params.get('class'):
             qs = qs.filter(school_class_id=int_param(params, 'class'))
 
-        return qs.select_related('student', 'term', 'term__session', 'school_class')
+        return qs.select_related(
+            'student', 'term', 'term__session', 'school_class',
+        ).prefetch_related('trait_ratings')
 
     def update(self, request, *args, **kwargs):
         # 'status' (publish/release) may only change via the publish/unpublish/

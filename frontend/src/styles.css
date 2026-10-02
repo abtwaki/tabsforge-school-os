@@ -262,3 +262,6 @@ a.kpi:hover{border-color:var(--school-primary,var(--green));box-shadow:0 6px 20p
 .task-prio.high{background:#fbe4e0;color:#a03d30}
 .task-prio.medium{background:#fef3c7;color:#92400e}
 .task-prio.low{background:#e6f2ec;color:#28705f}
+
+.form-section{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.form-section .form-legend{grid-column:auto;padding:0 6px;margin:0}

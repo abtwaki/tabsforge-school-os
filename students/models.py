@@ -11,6 +11,29 @@ class Student(TenantModel):
         FEMALE = 'female', 'Female'
         OTHER = 'other', 'Other'
 
+    class Religions(models.TextChoices):
+        CHRISTIANITY = 'christianity', 'Christianity'
+        ISLAM = 'islam', 'Islam'
+        TRADITIONAL = 'traditional', 'Traditional'
+        OTHER = 'other', 'Other'
+
+    class BloodGroups(models.TextChoices):
+        O_POS = 'O+', 'O+'
+        O_NEG = 'O-', 'O-'
+        A_POS = 'A+', 'A+'
+        A_NEG = 'A-', 'A-'
+        B_POS = 'B+', 'B+'
+        B_NEG = 'B-', 'B-'
+        AB_POS = 'AB+', 'AB+'
+        AB_NEG = 'AB-', 'AB-'
+
+    class Genotypes(models.TextChoices):
+        AA = 'AA', 'AA'
+        AS = 'AS', 'AS'
+        SS = 'SS', 'SS'
+        AC = 'AC', 'AC'
+        SC = 'SC', 'SC'
+
     admission_number = models.CharField(max_length=50, db_index=True)
     user = models.OneToOneField(
         User,
@@ -26,6 +49,21 @@ class Student(TenantModel):
     gender = models.CharField(max_length=10, choices=Genders.choices, blank=True)
     address = models.TextField(blank=True)
     enrollment_date = models.DateField(auto_now_add=True)
+
+    # Nigerian biodata — required by schools for WAEC registration, health
+    # records, and state/LGA reporting.
+    nationality = models.CharField(max_length=60, blank=True, default='Nigerian')
+    state_of_origin = models.CharField(max_length=60, blank=True)
+    lga = models.CharField('Local Government Area', max_length=100, blank=True)
+    religion = models.CharField(max_length=20, choices=Religions.choices, blank=True)
+    nin = models.CharField('National Identification Number', max_length=11, blank=True)
+    blood_group = models.CharField(max_length=5, choices=BloodGroups.choices, blank=True)
+    genotype = models.CharField(max_length=5, choices=Genotypes.choices, blank=True)
+    medical_conditions = models.TextField(
+        blank=True,
+        help_text='Allergies, chronic conditions or medications staff should know about.',
+    )
+    previous_school = models.CharField(max_length=255, blank=True)
 
     class Meta:
         ordering = ['last_name', 'first_name']

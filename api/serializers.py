@@ -198,6 +198,8 @@ class StudentSerializer(TenantSerializer):
             'id', 'school', 'admission_number', 'user', 'first_name', 'last_name',
             'name', 'class_name', 'section_id', 'date_of_birth', 'gender',
             'address', 'enrollment_date',
+            'nationality', 'state_of_origin', 'lga', 'religion', 'nin',
+            'blood_group', 'genotype', 'medical_conditions', 'previous_school',
             'section', 'guardian', 'guardian_first_name', 'guardian_last_name',
             'guardian_phone', 'guardian_email', 'guardian_relationship',
             'created_at', 'updated_at', 'is_archived', 'archived_at'

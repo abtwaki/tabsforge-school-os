@@ -208,6 +208,14 @@ class ReportCard(TenantModel):
     teacher_comments = models.TextField(blank=True)
     principal_comments = models.TextField(blank=True)
     next_term_begins = models.DateField(null=True, blank=True)
+    # Snapshot of term attendance at compute time (Nigerian report cards show
+    # "X of Y days present" alongside the academic results).
+    days_open = models.PositiveSmallIntegerField(null=True, blank=True)
+    days_present = models.PositiveSmallIntegerField(null=True, blank=True)
+    class_average = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Average score across the whole class — parents compare against the pupil\'s own average.',
+    )
 
     class Meta:
         unique_together = [['school', 'student', 'term']]
@@ -243,3 +251,32 @@ class AtRiskFlag(TenantModel):
 
     def __str__(self):
         return f"AtRisk: {self.student} ({self.flag_type}) - {self.term}"
+
+
+class TraitRating(TenantModel):
+    """Affective & psychomotor trait ratings on a report card.
+
+    Nigerian report cards grade behaviour/skills on a 1–5 scale alongside
+    academic scores — e.g. Punctuality (affective) or Handwriting (psychomotor).
+    The trait name is free text so each school can use its own checklist.
+    """
+    class Category(models.TextChoices):
+        AFFECTIVE = 'affective', 'Affective (Behaviour)'
+        PSYCHOMOTOR = 'psychomotor', 'Psychomotor (Skills)'
+
+    report_card = models.ForeignKey(
+        ReportCard, on_delete=models.CASCADE, related_name='trait_ratings'
+    )
+    category = models.CharField(max_length=15, choices=Category.choices)
+    trait = models.CharField(max_length=60)
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text='1–5 scale (1 = poor … 5 = excellent)',
+    )
+
+    class Meta:
+        ordering = ['category', 'trait']
+        unique_together = [['school', 'report_card', 'category', 'trait']]
+
+    def __str__(self):
+        return f"{self.trait}: {self.rating}"

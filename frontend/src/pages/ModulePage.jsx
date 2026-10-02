@@ -9,6 +9,18 @@ import SubmissionsModal from './SubmissionsModal'
  * field spec: { f, label, required, type: 'text'|'number'|'date'|'select'|'fk'|'bool'|'textarea'|'password',
  *               options: [[v,l]] | source: 'endpoint', labelKey }
  */
+const NG_STATES = [
+  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+  'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT — Abuja', 'Gombe',
+  'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
+  'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto',
+  'Taraba', 'Yobe', 'Zamfara',
+].map(s => [s, s])
+
+const BLOOD_GROUPS = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].map(s => [s, s])
+const GENOTYPES = ['AA', 'AS', 'SS', 'AC', 'SC'].map(s => [s, s])
+const RELIGIONS = [['christianity', 'Christianity'], ['islam', 'Islam'], ['traditional', 'Traditional'], ['other', 'Other']]
+
 const moduleConfig = {
   applications: {
     columns: ['Applicant', 'Class', 'Session', 'Guardian', 'Status', 'Applied'],
@@ -23,6 +35,16 @@ const moduleConfig = {
       { f: 'admission_number', required: true },
       { f: 'gender', type: 'select', options: [['male', 'Male'], ['female', 'Female'], ['other', 'Other']] },
       { f: 'date_of_birth', type: 'date' }, { f: 'address', type: 'textarea' },
+      { legend: 'Biodata (Nigerian records)' },
+      { f: 'state_of_origin', label: 'State of origin', type: 'select', options: NG_STATES },
+      { f: 'lga', label: 'Local Government Area' },
+      { f: 'nationality', label: 'Nationality', default: 'Nigerian' },
+      { f: 'religion', label: 'Religion', type: 'select', options: RELIGIONS },
+      { f: 'nin', label: 'NIN (National ID no.)' },
+      { f: 'blood_group', label: 'Blood group', type: 'select', options: BLOOD_GROUPS },
+      { f: 'genotype', label: 'Genotype', type: 'select', options: GENOTYPES },
+      { f: 'previous_school', label: 'Previous school' },
+      { f: 'medical_conditions', label: 'Allergies / medical conditions', type: 'textarea' },
       { legend: 'Class assignment' },
       { f: 'section', type: 'fk', source: 'sections', label: 'Class / Section', required: true, labelKey: 'display_name' },
       { legend: 'Parent / guardian — pick an existing one or fill in new details' },
@@ -447,6 +469,17 @@ export default function ModulePage() {
     } catch (e) { setMsg({ kind: 'error', text: e.message }) }
   }
 
+  const payOnline = async row => {
+    try {
+      const res = await post('/payments/paystack/initialize/', { invoice_id: row.id })
+      if (res.authorization_url) window.location.assign(res.authorization_url)
+    } catch (e) {
+      setMsg({ kind: 'error', text: e.message.includes('503') || e.message.toLowerCase().includes('configured')
+        ? 'Online payments are not yet enabled for this school — pay via bank transfer or ask the bursar.'
+        : e.message })
+    }
+  }
+
   const restore = async row => {
     try {
       await post(`/${endpoint}/${row.id}/restore/`, {})
@@ -494,7 +527,8 @@ export default function ModulePage() {
               ) : !error && filtered.length ? (
                 filtered.map((row, i) => (
                   <tr key={row.id || i} className={row.is_archived ? 'muted-row' : ''}
-                    onClick={() => name === 'applications' && setDetail(row)} style={name === 'applications' ? { cursor: 'pointer' } : {}}>
+                    onClick={() => ['applications', 'students'].includes(name) && setDetail(row)}
+                    style={['applications', 'students'].includes(name) ? { cursor: 'pointer' } : {}}>
                     {config.fields.map((f, j) => (
                       <td key={f}>{j === 0 ? <strong>{cell(row, f, j)}</strong> : cell(row, f, j)}</td>
                     ))}
@@ -507,6 +541,10 @@ export default function ModulePage() {
                       {name === 'assignments' && isStudent && (
                         <button className="ghost sm" onClick={() => setSubmitting(row)}
                           title="Submit your work for this assignment">Submit work</button>
+                      )}
+                      {name === 'invoices' && user.role === 'parent' && ['sent', 'partial', 'overdue'].includes(row.status) && (
+                        <button className="ghost sm" onClick={() => payOnline(row)}
+                          title="Pay the outstanding balance online via Paystack">Pay online</button>
                       )}
                       {canWrite && config.create && (
                         <>
@@ -562,7 +600,8 @@ export default function ModulePage() {
                 {f.type === 'fk' ? (
                   <FkSelect spec={f} value={form[f.f]} onChange={v => setForm({ ...form, [f.f]: v })} options={fkOptions[f.source] || []} />
                 ) : f.type === 'select' ? (
-                  <select required={f.required} value={form[f.f] ?? f.default ?? f.options[0][0]} onChange={e => setForm({ ...form, [f.f]: e.target.value })}>
+                  <select required={f.required} value={form[f.f] ?? f.default ?? (f.required ? f.options[0][0] : '')} onChange={e => setForm({ ...form, [f.f]: e.target.value })}>
+                    {!f.required && <option value="">—</option>}
                     {f.options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                   </select>
                 ) : f.type === 'bool' ? (
@@ -623,6 +662,26 @@ export default function ModulePage() {
               }}>Approve & admit</button>
             </div>
           )}
+        </Modal>
+      )}
+
+      {detail && name === 'students' && (
+        <Modal title={`${detail.name || `${detail.first_name} ${detail.last_name}`} — ${detail.admission_number}`} close={() => setDetail(null)} wide>
+          <div className="detail-grid">
+            <div><small>Class</small><strong>{detail.class_name || '—'}</strong></div>
+            <div><small>Gender</small><strong>{title(detail.gender) || '—'}</strong></div>
+            <div><small>Date of birth</small><strong>{fmtDate(detail.date_of_birth)}</strong></div>
+            <div><small>Religion</small><strong>{title(detail.religion) || '—'}</strong></div>
+            <div><small>State of origin</small><strong>{detail.state_of_origin || '—'}</strong></div>
+            <div><small>LGA</small><strong>{detail.lga || '—'}</strong></div>
+            <div><small>Nationality</small><strong>{detail.nationality || '—'}</strong></div>
+            <div><small>NIN</small><strong>{detail.nin || '—'}</strong></div>
+            <div><small>Blood group</small><strong>{detail.blood_group || '—'}</strong></div>
+            <div><small>Genotype</small><strong>{detail.genotype || '—'}</strong></div>
+            <div><small>Previous school</small><strong>{detail.previous_school || '—'}</strong></div>
+            <div style={{ gridColumn: '1 / -1' }}><small>Allergies / medical conditions</small><strong>{detail.medical_conditions || '—'}</strong></div>
+            <div style={{ gridColumn: '1 / -1' }}><small>Address</small><strong>{detail.address || '—'}</strong></div>
+          </div>
         </Modal>
       )}
 

@@ -26,6 +26,10 @@ function useLookups() {
   return { terms, classes, subjects }
 }
 
+// Nigerian report-card trait checklists (schools can type custom ones too).
+const AFFECTIVE_TRAITS = ['Punctuality', 'Neatness', 'Politeness', 'Honesty', 'Self-control', 'Attentiveness', 'Leadership', 'Cooperation']
+const PSYCHOMOTOR_TRAITS = ['Sports & games', 'Handwriting', 'Drawing & craft', 'Music', 'Computer skills', 'Tools handling']
+
 export default function Gradebook({ reportCards = false }) {
   const { user } = useAuth()
   const canWrite = WRITERS.has(user.role)
@@ -43,6 +47,8 @@ export default function Gradebook({ reportCards = false }) {
   const [busy, setBusy] = useState(false)
   const [showNew, setShowNew] = useState(false)
   const [editCard, setEditCard] = useState(null)
+  const [traitsCard, setTraitsCard] = useState(null)
+  const [traits, setTraits] = useState({})
   const [view, setView] = useState(reportCards ? 'cards' : 'entry')
 
   // Default selections once lookups land.
@@ -224,6 +230,34 @@ export default function Gradebook({ reportCards = false }) {
     }
   }
 
+  const openTraits = card => {
+    const init = {}
+    for (const t of card.trait_ratings || []) init[`${t.category}:${t.trait}`] = t.rating
+    setTraits(init)
+    setTraitsCard(card)
+  }
+
+  const saveTraits = async e => {
+    e.preventDefault()
+    setBusy(true)
+    try {
+      const payload = Object.entries(traits)
+        .filter(([, v]) => v)
+        .map(([key, rating]) => {
+          const [category, trait] = key.split(/:(.+)/)
+          return { category, trait, rating: Number(rating) }
+        })
+      const res = await patch(`/report-cards/${traitsCard.id}/`, { trait_ratings: payload })
+      setCards(cards.map(c => c.id === traitsCard.id ? { ...c, ...res } : c))
+      setTraitsCard(null)
+      setMsg({ kind: 'success', text: 'Trait ratings saved — they appear on the printed report card.' })
+    } catch (e2) {
+      setMsg({ kind: 'error', text: e2.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const downloadCard = async card => {
     try {
       await download(`/report-cards/${card.id}/pdf/`, `report-card-${card.student_name}.pdf`)
@@ -397,7 +431,7 @@ export default function Gradebook({ reportCards = false }) {
           <div className="table-wrap">
             <table>
               <thead>
-                <tr><th>Student</th><th>Term</th><th>Class</th><th>Average</th><th>Position</th><th>Status</th><th /></tr>
+                <tr><th>Student</th><th>Term</th><th>Class</th><th>Average</th><th>Class avg</th><th>Attendance</th><th>Position</th><th>Status</th><th /></tr>
               </thead>
               <tbody>
                 {cards.map(c => (
@@ -406,11 +440,19 @@ export default function Gradebook({ reportCards = false }) {
                     <td>{c.term_name}</td>
                     <td>{c.class_name || '—'}</td>
                     <td><span className="grade">{c.average_score != null ? `${c.average_score}%` : '—'}</span></td>
+                    <td>{c.class_average != null ? `${c.class_average}%` : '—'}</td>
+                    <td title="Days present / days open">
+                      {c.days_open != null ? `${c.days_present ?? '—'} / ${c.days_open}` : '—'}
+                    </td>
                     <td>{c.position ? `${c.position} / ${c.class_size || '—'}` : '—'}</td>
                     <td>{statusBadge(c.status)}</td>
                     <td className="row-actions">
                       <button className="secondary" onClick={() => downloadCard(c)}>PDF</button>
                       {canWrite && <button className="secondary" onClick={() => setEditCard(c)}>Comments</button>}
+                      {canWrite && (
+                        <button className="secondary" onClick={() => openTraits(c)}
+                          title="Rate affective & psychomotor traits (1–5)">Traits</button>
+                      )}
                       {canWrite && (
                         <button className="secondary" onClick={() => publishCard(c, c.status !== 'published')}>
                           {c.status === 'published' ? 'Unpublish' : 'Publish'}
@@ -420,7 +462,7 @@ export default function Gradebook({ reportCards = false }) {
                   </tr>
                 ))}
                 {!cards.length && (
-                  <tr><td colSpan="7">
+                  <tr><td colSpan="9">
                     <Empty title="No report cards yet"
                       hint="Generate report cards after scores are entered — cards stay hidden from parents until released. Click to generate."
                       onAdd={canWrite ? compute : undefined} />
@@ -468,6 +510,35 @@ export default function Gradebook({ reportCards = false }) {
             <div className="modal-actions">
               <button type="button" className="secondary" onClick={() => setEditCard(null)}>Cancel</button>
               <button className="primary">Save comments</button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {traitsCard && (
+        <Modal title={`Trait ratings — ${traitsCard.student_name}`} close={() => setTraitsCard(null)}>
+          <p className="muted" style={{ fontSize: 12 }}>
+            Rate each trait 1–5 (5 = excellent). Blank traits are left off the report card.
+          </p>
+          <form className="stack" onSubmit={saveTraits}>
+            {[['affective', 'Affective domain', AFFECTIVE_TRAITS],
+              ['psychomotor', 'Psychomotor domain', PSYCHOMOTOR_TRAITS]].map(([cat, label, list]) => (
+              <fieldset key={cat} className="form-section">
+                <legend className="form-legend">{label}</legend>
+                {list.map(trait => (
+                  <label key={trait}>{trait}
+                    <select value={traits[`${cat}:${trait}`] ?? ''}
+                      onChange={e => setTraits({ ...traits, [`${cat}:${trait}`]: e.target.value })}>
+                      <option value="">—</option>
+                      {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                ))}
+              </fieldset>
+            ))}
+            <div className="modal-actions">
+              <button type="button" className="secondary" onClick={() => setTraitsCard(null)}>Cancel</button>
+              <button className="primary" disabled={busy}>{busy ? 'Saving…' : 'Save trait ratings'}</button>
             </div>
           </form>
         </Modal>

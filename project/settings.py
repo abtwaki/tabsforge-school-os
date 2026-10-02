@@ -42,15 +42,26 @@ EMAIL_USE_TLS = env('EMAIL_USE_TLS')
 EMAIL_USE_SSL = env('EMAIL_USE_SSL')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default='noreply@tabsforge.com')
 
-# Payment provider (paystack / flutterwave / manual)
+# Payment providers (paystack / flutterwave / manual). The gateway endpoints
+# answer 503 until the secret keys below are configured.
 PAYMENT_PROVIDER = env('PAYMENT_PROVIDER', default='manual')
 PAYSTACK_SECRET_KEY = env('PAYSTACK_SECRET_KEY', default='')
+PAYSTACK_PUBLIC_KEY = env('PAYSTACK_PUBLIC_KEY', default='')
+PAYSTACK_BASE_URL = env('PAYSTACK_BASE_URL', default='https://api.paystack.co')
 FLUTTERWAVE_SECRET_KEY = env('FLUTTERWAVE_SECRET_KEY', default='')
+FLUTTERWAVE_PUBLIC_KEY = env('FLUTTERWAVE_PUBLIC_KEY', default='')
+FLUTTERWAVE_BASE_URL = env('FLUTTERWAVE_BASE_URL', default='https://api.flutterwave.com')
+FLUTTERWAVE_SECRET_HASH = env('FLUTTERWAVE_SECRET_HASH', default='')
 
-# SMS provider (stub by default)
+# SMS provider (termii / africastalking / twilio / stub)
 SMS_PROVIDER = env('SMS_PROVIDER', default='stub')
 SMS_API_KEY = env('SMS_API_KEY', default='')
 SMS_SENDER_ID = env('SMS_SENDER_ID', default='TabsForge')
+# Termii — the Nigerian-standard gateway
+TERMII_API_KEY = env('TERMII_API_KEY', default='')
+TERMII_SENDER_ID = env('TERMII_SENDER_ID', default='TabsForge')
+TERMII_BASE_URL = env('TERMII_BASE_URL', default='https://v3.api.termii.com')
+TERMII_CHANNEL = env('TERMII_CHANNEL', default='generic')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
